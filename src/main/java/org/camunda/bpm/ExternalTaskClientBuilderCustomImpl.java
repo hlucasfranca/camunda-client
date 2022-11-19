@@ -1,5 +1,6 @@
 package org.camunda.bpm;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.camunda.bpm.client.impl.EngineClient;
 import org.camunda.bpm.client.impl.ExternalTaskClientBuilderImpl;
@@ -10,15 +11,18 @@ public class ExternalTaskClientBuilderCustomImpl extends ExternalTaskClientBuild
 
     private HttpRequestRetryHandler handler;
 
-    public ExternalTaskClientBuilderCustomImpl(HttpRequestRetryHandler handler){
+    private HttpClient httpClient;
+
+    public ExternalTaskClientBuilderCustomImpl(HttpRequestRetryHandler handler, HttpClient httpClient){
         super();
         this.handler = handler;
+        this.httpClient = httpClient;
     }
 
     @Override
     protected void initEngineClient() {
         RequestInterceptorHandler requestInterceptorHandler = new RequestInterceptorHandler(this.interceptors);
-        RequestExecutor requestExecutor = new RequestExecutorCustom(requestInterceptorHandler, this.objectMapper, handler);
+        RequestExecutor requestExecutor = new RequestExecutorCustom(requestInterceptorHandler, this.objectMapper, this.handler, this.httpClient);
         this.engineClient = new EngineClient(this.workerId, this.maxTasks, this.asyncResponseTimeout, this.baseUrl, requestExecutor);
     }
 
